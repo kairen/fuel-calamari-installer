@@ -1,5 +1,14 @@
 #!/bin/sh
 
+echo "Generating locales ...."
+locale-gen en_US.UTF-8
+localedef -i en_US -f UTF-8 en_US.UTF-8
+export LANGUAGE=en_US.UTF-8
+export LANG=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+locale-gen en_US.UTF-8
+dpkg-reconfigure locales
+
 echo "Installing Calamari ...."
 
 MASTER_NODE_HOST=$(hostname)
@@ -15,7 +24,7 @@ for node in $NODES; do
     scp salt-stack_fix.tar $node:/root
     scp minion $node:/root
     ssh $node tar xvf salt-stack_fix.tar
-    ssh $node dpkg -i salt-stack_fix/*.deb
+    ssh $node sudo dpkg -i salt-stack_fix/*.deb
     ssh $node mv /etc/diamond/diamond.conf.example /etc/diamond/diamond.conf
     ssh $node mv minion /etc/salt/
     ssh $node service salt-minion restart && service diamond restart
@@ -30,14 +39,16 @@ tar xvf salt-stack_fix.tar
 tar xvf cairo2.tar
 tar xvf calamari-clients-build-output.tar
 
-dpkg -i salt-stack_fix/master/*.deb
-dpkg -i Calamari_package_fix/*.deb
-dpkg -i cairo2/*.deb
-dpkg -i calamari-server_1.3-rc-23-g4c41db3_amd64.deb
+sudo dpkg -i tcl.deb 
+sudo dpkg -i expect.deb
+sudo dpkg -i salt-stack_fix/master/*.deb
+sudo dpkg -i Calamari_package_fix/*.deb
+sudo dpkg -i cairo2/*.deb
+sudo dpkg -i calamari-server.deb
 cp -rp opt/calamari/webapp/content/ /opt/calamari/webapp/content
 ls -l /opt/calamari/webapp/content
 
-sudo calamari-ctl initialize
+expect initialize.sh
 
 cp ports.conf /etc/apache2/
 cp calamari.conf /etc/apache2/sites-available
